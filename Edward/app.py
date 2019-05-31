@@ -243,43 +243,43 @@ def income():
 #     return(jsonify(list(sorted_zips)))
 
 
-# @app.route("/zipcodes")
-# def zipcode():
-#     """Return the stats for all zipcodes in CA."""
-#     sel = [
-#         zipcode_data.zipcode,
-#         zipcode_data.inccypcap, # Average invidiual income
-#         zipcode_data.crmcytotc, # Total crime - 100 = average
-#         zipcode_data.edubach_00, # Total population with a bachelors degree
-#         zipcode_data.daypop, # Daytime population of the zip
-#         zipcode_data.tmpavgjan, # Average temperature in January
-#         zipcode_data.exphh, # Costs associated with owned dwellings
-#         zipcode_data.latitude,
-#         zipcode_data.longitude,
-#         zipcode_data.state,
-#     ]
+@app.route("/zipcodes")
+def zipcode():
+    """Return the stats for all zipcodes in CA."""
+    sel = [
+        zipcode_data.zipcode,
+        zipcode_data.income, # Average invidiual income
+        zipcode_data.crime, # Total crime - 100 = average
+        zipcode_data.education, # Total population with a bachelors degree
+        zipcode_data.jan_avg_temp, # Daytime population of the zip
+        zipcode_data.cost_of_living, # Average temperature in January
+        zipcode_data.state, # Costs associated with owned dwellings
+        # zipcode_data.latitude,
+        # zipcode_data.longitude,
+        # zipcode_data.state,
+    ]
 
-#     results = db.session.query(*sel).filter(zipcode_data.state == "06").all()
+    results = db.session.query(*sel).filter(zipcode_data.state == "06").all()
 
-#     # Create a dictionary for each zip code
-#     zip_info = {}
+    # Create a dictionary for each zip code
+    zip_info = {}
 
-#     # Loop through each result
-#     for result in results:
-#         # Create primaryzip code key
-#         zip_info[result[0]] = {
-#             # Populate dictionary entry with a second dictionary
-#             "income":result[1],
-#             "crime":result[2],
-#             "education":result[3]/result[4],
-#             "winter_temp":result[5],
-#             "cost_of_living":result[6],
-#             "lat":result[7],
-#             "lon":result[8],
-#         }
+    # Loop through each result
+    for result in results:
+        # Create primaryzip code key
+        zip_info[result[0]] = {
+            # Populate dictionary entry with a second dictionary
+            "income":result[1],
+            "crime":result[2],
+            "education":result[3],
+            "winter_temp":result[4],
+            "cost_of_living":result[5],
+            # "lat":result[7],
+            # "lon":result[8],
+        }
 
-#     print(zip_info)
-#     return jsonify(zip_info)
+    print(zip_info)
+    return jsonify(zip_info)
 
 # @app.route("/zipcodes/<zipcode>")
 # def sample_metadata(zipcode):

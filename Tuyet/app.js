@@ -8,15 +8,15 @@ function init() {
     sampleNames.forEach((sample) => {
       // Change to append <tr> 
       selector
-        .append("option")
-        .text(sample)
+        .append('tr')
+        .text(zipCode)
         .property("value", sample);
     });
 
-    // Use the first sample from the list to build the initial plots
-    const firstSample = sampleNames[0];
-    buildCharts(firstSample);
-    buildMetadata(firstSample);
+    // // Use the first sample from the list to build the initial plots
+    // const firstSample = sampleNames[0];
+    // buildCharts(firstSample);
+    // buildMetadata(firstSample);
   });
 
 }

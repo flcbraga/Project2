@@ -26,12 +26,8 @@ Base = automap_base()
 # reflect the tables
 Base.prepare(db.engine, reflect=True)
 
-# # Save references to each table
+# Save references to each table
 zipcode_data = Base.classes.zipcode_data
-# Samples = Base.classes.samples
-
-# Dummy CSV for interim
-# dummy=pd.read_csv('dummy.csv')
 
 
 @app.route("/")
@@ -39,24 +35,6 @@ def index():
     """Return the homepage."""
     return render_template("index.html")
 
-
-# @app.route("/zips")
-# def zips():
-#     """Return the full list of zipcodes."""
-
-#     # Use Pandas to perform the sql query
-#     # stmt = db.session.query(Samples).statement
-#     # df = pd.read_sql_query(stmt, db.session.bind)
-
-#     # Return a list of the column names (sample names)
-#     # return jsonify(list(df.columns)[2:])
-
-#     # Using dummy data
-#     # dummy_json={}
-#     # for row in dummy:
-#     #     zip = row[0]
-#     #     dummy_json{zip}
-#     return(jsonify(dummy.to_dict('records')))
 
 @app.route("/income")
 def income():
@@ -101,146 +79,161 @@ def income():
     return(jsonify(list(shorted_df)))
 
 
-# @app.route("/crime")
-# def crime():
-#     """Return the list of zipcodes sorted by crime (ascending)."""
-#     sel = [
-#         zipcode_data.zipcode,
-#         zipcode_data.crmcytotc, # Crime - 100 = national average
-#     ]
+@app.route("/crime")
+def crime():
+    """Return the list of zipcodes sorted by crime (ascending)."""
+    sel = [
+        zipcode_data.zipcode,
+        zipcode_data.crime, # Crime - 100 = national average
+    ]
 
-#     results = db.session.query(*sel).filter(zipcode_data.state == "06").all()
+    results = db.session.query(*sel).filter(zipcode_data.state == "06").all()
 
-#     # Create dataframe for results, to be sorted
-#     df = pd.DataFrame({
-#         "zipcode":[],
-#         "crime":[]
-#     })
+    # Create dataframe for results, to be sorted
+    df = pd.DataFrame({
+        "zipcode":[],
+        "crime":[]
+    })
 
-#     # Counter for populating dataframe
-#     count=0
+    # Counter for populating dataframe
+    zipcodes=[]
+    crimes=[]
 
-#     # Loop through results and create dataframe
-#     for result in results:
-#         df["zipcode"][count]=result[0]
-#         df["crime"][count]=result[1]
-#         count=count+1
+    # Loop through results and create dataframe
+    for result in results:
+        zipcodes.append(result[0])
+        crimes.append(result[1])
+
+    df=pd.DataFrame({
+        "zipcode":zipcodes,
+        "crime":crimes
+    })
     
-#     # Sort dataframe
-#     sorted_df=df.sort_values(by=["crime"])
+    # Sort dataframe
+    sorted_df=df.sort_values(by=["crime"],ascending=True)
 
-#     # Take top 10 zips from sorted dataframe
-#     shorted_df=sorted_df["zipcode"][0:10]
+    # Take top 10 zips from sorted dataframe
+    shorted_df=sorted_df["zipcode"][0:10]
 
-#     # Return sorted zipcodes
-#     return(jsonify(list(shorted_df)))
+    # Return sorted zipcodes
+    return(jsonify(list(shorted_df)))
 
-# @app.route("/education")
-# def age():
-#     """Return the list of zipcodes sorted by education (descending)."""
-#     sel = [
-#         zipcode_data.zipcode,
-#         zipcode_data.edubach_00, # Average invidiual income
-#         zipcode_data.daypop, # Day Time Population
-#     ]
+@app.route("/education")
+def education():
+    """Return the list of zipcodes sorted by education (descending)."""
+    sel = [
+        zipcode_data.zipcode,
+        zipcode_data.education, # % of daytime population with a bachelors degree
+    ]
 
-#     results = db.session.query(*sel).filter(zipcode_data.state == "06").all()
+    results = db.session.query(*sel).filter(zipcode_data.state == "06").all()
 
-#     # Create dataframe for results, to be sorted
-#     df = pd.DataFrame({
-#         "zipcode":[],
-#         "education":[],
-#         "population":[]
-#     })
+    # Create dataframe for results, to be sorted
+    df = pd.DataFrame({
+        "zipcode":[],
+        "pct_bach":[]
+    })
 
-#     # Counter for populating dataframe
-#     count=0
+    # Counter for populating dataframe
+    zipcodes=[]
+    pct_bachs=[]
 
-#     # Loop through results and create dataframe
-#     for result in results:
-#         df["zipcode"][count]=result[0]
-#         df["education"][count]=result[1]
-#         df["population"][count]=result[2]
-#         count=count+1
+    # Loop through results and create dataframe
+    for result in results:
+        zipcodes.append(result[0])
+        pct_bachs.append(result[1])
+
+    df=pd.DataFrame({
+        "zipcode":zipcodes,
+        "pct_bach":pct_bachs
+    })
     
-#     df["pct_bachelors"] = df["education"]/df["population"]
+    # Sort dataframe
+    sorted_df=df.sort_values(by=["pct_bach"],ascending=False)
+
+    # Take top 10 zips from sorted dataframe
+    shorted_df=sorted_df["zipcode"][0:10]
+
+    # Return sorted zipcodes
+    return(jsonify(list(shorted_df)))
+
+@app.route("/climate")
+def climate():
+    """Return the list of zipcodes sorted by average january temperature (descending)."""
+    sel = [
+        zipcode_data.zipcode,
+        zipcode_data.jan_avg_temp, # Average invidiual income
+    ]
+
+    results = db.session.query(*sel).filter(zipcode_data.state == "06").all()
+
+    # Create dataframe for results, to be sorted
+    df = pd.DataFrame({
+        "zipcode":[],
+        "jan_avg_temp":[]
+    })
+
+    # Counter for populating dataframe
+    zipcodes=[]
+    jan_avg_temps=[]
+
+    # Loop through results and create dataframe
+    for result in results:
+        zipcodes.append(result[0])
+        jan_avg_temps.append(result[1])
+
+    df=pd.DataFrame({
+        "zipcode":zipcodes,
+        "jan_avg_temp":jan_avg_temps
+    })
     
-#     # Sort dataframe
-#     sorted_df=df.sort_values(by=["pct_bachelors"],ascending=False)
+    # Sort dataframe
+    sorted_df=df.sort_values(by=["jan_avg_temp"],ascending=False)
 
-#     # Take top 10 zips from sorted dataframe
-#     shorted_df=sorted_df["zipcode"][0:10]
+    # Take top 10 zips from sorted dataframe
+    shorted_df=sorted_df["zipcode"][0:10]
 
-#     # Return sorted zipcodes
-#     return(jsonify(list(shorted_df)))
+    # Return sorted zipcodes
+    return(jsonify(list(shorted_df)))
 
-# @app.route("/climate")
-# def age():
-#     """Return the list of zipcodes sorted by average january temperature (descending)."""
-#     sel = [
-#         zipcode_data.zipcode,
-#         zipcode_data.inccypcap, # Average invidiual income
-#     ]
+@app.route("/cost")
+def cost():
+    """Return the list of zipcodes sorted by cost of living (ascending)."""
+    sel = [
+        zipcode_data.zipcode,
+        zipcode_data.cost_of_living, # Average invidiual income
+    ]
 
-#     results = db.session.query(*sel).filter(zipcode_data.state == "06").all()
+    results = db.session.query(*sel).filter(zipcode_data.state == "06").all()
 
-#     # Create dataframe for results, to be sorted
-#     df = pd.DataFrame({
-#         "zipcode":[],
-#         "income":[]
-#     })
+    # Create dataframe for results, to be sorted
+    df = pd.DataFrame({
+        "zipcode":[],
+        "cost_of_living":[]
+    })
 
-#     # Counter for populating dataframe
-#     count=0
+    # Counter for populating dataframe
+    zipcodes=[]
+    cost_of_livings=[]
 
-#     # Loop through results and create dataframe
-#     for result in results:
-#         df["zipcode"][count]=result[0]
-#         df["income"][count]=result[1]
-#         count=count+1
+    # Loop through results and create dataframe
+    for result in results:
+        zipcodes.append(result[0])
+        cost_of_livings.append(result[1])
+
+    df=pd.DataFrame({
+        "zipcode":zipcodes,
+        "cost_of_living":cost_of_livings
+    })
     
-#     # Sort dataframe
-#     sorted_df=df.sort_values(by=["income"],ascending=False)
+    # Sort dataframe
+    sorted_df=df.sort_values(by=["cost_of_living"],ascending=True)
 
-#     # Take top 10 zips from sorted dataframe
-#     shorted_df=sorted_df["zipcode"][0:10]
+    # Take top 10 zips from sorted dataframe
+    shorted_df=sorted_df["zipcode"][0:10]
 
-#     # Return sorted zipcodes
-#     return(jsonify(list(sorted_zips)))
-
-# @app.route("/cost")
-# def age():
-#     """Return the list of zipcodes sorted by cost of living (ascending)."""
-#     sel = [
-#         zipcode_data.zipcode,
-#         zipcode_data.inccypcap, # Average invidiual income
-#     ]
-
-#     results = db.session.query(*sel).filter(zipcode_data.state == "06").all()
-
-#     # Create dataframe for results, to be sorted
-#     df = pd.DataFrame({
-#         "zipcode":[],
-#         "income":[]
-#     })
-
-#     # Counter for populating dataframe
-#     count=0
-
-#     # Loop through results and create dataframe
-#     for result in results:
-#         df["zipcode"][count]=result[0]
-#         df["income"][count]=result[1]
-#         count=count+1
-    
-#     # Sort dataframe
-#     sorted_df=df.sort_values(by=["income"],ascending=False)
-
-#     # Take top 10 zips from sorted dataframe
-#     shorted_df=sorted_df["zipcode"][0:10]
-
-#     # Return sorted zipcodes
-#     return(jsonify(list(sorted_zips)))
+    # Return sorted zipcodes
+    return(jsonify(list(shorted_df)))
 
 
 @app.route("/zipcodes")
@@ -281,51 +274,37 @@ def zipcode():
     print(zip_info)
     return jsonify(zip_info)
 
-# @app.route("/zipcodes/<zipcode>")
-# def sample_metadata(zipcode):
-#     """Return the full data set for a given sample."""
-#     zip_data=dummy.loc[dummy["zipcode"]==zipcode]
-#     print(zip_data)
-
-#     zip_dict=zip_data.to_dict("records")
-#     return(jsonify(zip_dict))
-
-# @app.route("/samples/<sample>")
-# def samples(sample):
-#     """Return `otu_ids`, `otu_labels`,and `sample_values`."""
-#     stmt = db.session.query(Samples).statement
-#     df = pd.read_sql_query(stmt, db.session.bind)
-
-#     # Filter the data based on the sample number and
-#     # only keep rows with values above 1
-#     sample_data = df.loc[df[sample] > 1, ["otu_id", "otu_label", sample]]
-#     # Format the data to send as json
-#     data = {
-#         "otu_ids": sample_data.otu_id.values.tolist(),
-#         "sample_values": sample_data[sample].values.tolist(),
-#         "otu_labels": sample_data.otu_label.tolist(),
-#     }
-#     return jsonify(data)
-
-# @app.route("/wfreq/<sample>")
-# def wfeq(sample):
-#     """Return the WFREQ for a given sample."""
-#     sel = [
-#         zipcode_data.sample,
-#         zipcode_data.WFREQ
-#     ]
-
-#     results = db.session.query(*sel).filter(zipcode_data.sample == sample).all()
-
-#     # Create a dictionary entry for each row of metadata information
-#     sample_metadata = {}
-#     for result in results:
-#         sample_metadata["sample"] = result[0]
-#         sample_metadata["WFREQ"] = result[1]
-
-#     print(sample_metadata)
-#     return jsonify(sample_metadata)
+@app.route("/zipcodes/<zipcode>")
+def zipcode_info(zipcode):
+    """Return the full data set for a given zipcode."""
+    sel = [
+        zipcode_data.zipcode,
+        zipcode_data.income, # Average invidiual income
+        zipcode_data.crime, # Total crime - 100 = average
+        zipcode_data.education, # Total population with a bachelors degree
+        zipcode_data.jan_avg_temp, # Daytime population of the zip
+        zipcode_data.cost_of_living, # Average temperature in January
+        zipcode_data.state, # Costs associated with owned dwellings
+        # zipcode_data.latitude,
+        # zipcode_data.longitude,
+        # zipcode_data.state,
+    ]
     
+
+    results = db.session.query(*sel).filter(zipcode_data.zipcode == str(zipcode)).all()
+
+    zip_data={}
+    # Loop through results and create dataframe
+    for result in results:
+        zip_data['zipcode']=result[0]
+        zip_data['income']=result[1]
+        zip_data['crime']=result[2]
+        zip_data['education']=result[3]
+        zip_data['jan_avg_temp']=result[4]
+        zip_data['cost_of_living']=result[5]
+
+    # Return sorted zipcodes
+    return(jsonify(zip_data))
 
 if __name__ == "__main__":
     app.run()

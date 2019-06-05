@@ -17,11 +17,6 @@ function createTable(zipcode){
     // Remove rows from table
     d3.selectAll("td").remove();
 
-    // console.log('Cost of living');
-    // console.log(response.cost_of_living);
-
-    // console.log(Object.entries(response))
-
     Object.entries(response).forEach(function(stat){
 
             // Append new row to table
@@ -203,9 +198,9 @@ function optionChanged(variable){
 
     var zip_list = []
 
-    zips.forEach(function(zip){
-      zip_list.push(zip.toString())
-    })
+    // zips.forEach(function(zip){
+    //   zip_list.push(zip.toString())
+    // })
 
 
     d3.select("ol")

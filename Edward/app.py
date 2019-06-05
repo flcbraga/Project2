@@ -274,6 +274,51 @@ def zipcode():
     print(zip_info)
     return jsonify(zip_info)
 
+
+@app.route("/averages")
+def avgs():
+    """Return the average for each stat for all zipcodes in CA."""
+    sel = [
+        zipcode_data.zipcode,
+        zipcode_data.income, # Average invidiual income
+        zipcode_data.crime, # Total crime - 100 = average
+        zipcode_data.education, # Total population with a bachelors degree
+        zipcode_data.jan_avg_temp, # Daytime population of the zip
+        zipcode_data.cost_of_living, # Average temperature in January
+        zipcode_data.state, # Costs associated with owned dwellings
+        # zipcode_data.latitude,
+        # zipcode_data.longitude,
+        # zipcode_data.state,
+    ]
+
+    results = db.session.query(*sel).filter(zipcode_data.state == "06").all()
+
+    # Create a list for each variable
+    incomes=[]
+    crimes=[]
+    educations=[]
+    jan_avg_temps=[]
+    cost_of_livings=[]
+
+    # Loop through each result
+    for result in results:
+        # Create primaryzip code key
+        incomes.append(result[1])
+        crimes.append(result[2])
+        educations.append(result[3])
+        jan_avg_temps.append(result[4])
+        cost_of_livings.append(result[5])
+
+    avgs={
+        'income':sum(incomes)/len(incomes),
+        'crime':sum(crimes)/len(crimes),
+        'education':sum(educations)/len(educations),
+        'jan_avg_temp':sum(jan_avg_temps)/len(jan_avg_temps),
+        'cost_of_living':sum(cost_of_livings)/len(cost_of_livings)
+    }
+        
+    return jsonify(avgs)
+
 @app.route("/zipcodes/<zipcode>")
 def zipcode_info(zipcode):
     """Return the full data set for a given zipcode."""
@@ -285,6 +330,8 @@ def zipcode_info(zipcode):
         zipcode_data.jan_avg_temp, # Daytime population of the zip
         zipcode_data.cost_of_living, # Average temperature in January
         zipcode_data.state, # Costs associated with owned dwellings
+        zipcode_data.name,
+        zipcode_data.city500_closest_name,
         # zipcode_data.latitude,
         # zipcode_data.longitude,
         # zipcode_data.state,
@@ -302,6 +349,8 @@ def zipcode_info(zipcode):
         zip_data['education']=result[3]
         zip_data['jan_avg_temp']=result[4]
         zip_data['cost_of_living']=result[5]
+        zip_data['name']=result[7]
+        zip_data['city500_closest_name']=result[8]
 
     # Return sorted zipcodes
     return(jsonify(zip_data))

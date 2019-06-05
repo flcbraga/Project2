@@ -1,209 +1,291 @@
-// Function to create object for guage chart
-function createGauge(wfreq){
+console.log("test");
 
-  // Convert 
-  var level= wfreq / 9 * 180;
-  // Trig to calc meter point
-  var degrees = 180 - level;
-  var radius = .5;
-  var radians = degrees * Math.PI / 180;
-  var x = radius * Math.cos(radians);
-  var y = radius * Math.sin(radians);
+var zipcode=92109;
 
-  // Path: may have to change to create a better triangle
-  var mainPath = 'M -.0 -0.025 L .0 0.025 L ',
-      pathX = String(x),
-      space = ' ',
-      pathY = String(y),
-      pathEnd = ' Z';
-  var path = mainPath.concat(pathX,space,pathY,pathEnd);
+var chartData={};
 
-  console.log(path);
+function createTable(zipcode){
 
-  var data = [{ type: 'scatter',
-  x: [0], y:[0],
-   marker: {size: 28, color:'850000'},
-   showlegend: false,
-   name: 'wfeq',
-   text: level,
-   hoverinfo: 'text+name'},
- { values: [25, 25/9, 25/9, 25/9, 25/9, 25/9,25/9,25/9, 25/9,25/9],
- rotation: 90,
- text: ['','8-9','7-8','6-7','5-6','4-5','3-4','2-3','1-2','0-1'],
- textinfo: 'text',
- textposition:'inside',
- marker: {colors:[  'FFFFFF',
- 'FFCCFE',
-    
-                        'F2B2F1', 'E599E4',
-                        'D87FD7', 'CC66CA',
-                        'BF4CBD'
-                        ,'B23FB0','A519A3','900096']},
- labels: ['','8-9','7-8','6-7','5-6','4-5','3-4','2-3','1-2','0-1',''],
- 
- hoverinfo: 'label',
- hole: .25,
- type: 'pie',
- showlegend: false
-}];
+  // Select body of table
+  var table = d3.select("tbody")
 
-var layout = {
- shapes:[{
-     type: 'path',
-     path: path,
-     fillcolor: '850000',
-     line: {
-       color: '850000'
-     }
-   }],
- title: '<b>Belly Button Washing Frequence</b> <br> Scrubs per Week',
-//  height: 1000,
-//  width: 1000,
- xaxis: {zeroline:false, showticklabels:false,
-            showgrid: false, range: [-1, 1]},
- yaxis: {zeroline:false, showticklabels:false,
-            showgrid: false, range: [-1, 1]}
-};
-return([data,layout]);
-}
+  // Loop through each sighting in matching data
+  zip_url=`/zipcodes/${zipcode}`
+
+  d3.json(zip_url).then(function(response){
+
+    // Remove rows from table
+    d3.selectAll("td").remove();
+
+    // console.log('Cost of living');
+    // console.log(response.cost_of_living);
+
+    // console.log(Object.entries(response))
+
+    Object.entries(response).forEach(function(stat){
+
+            // Append new row to table
+            new_row=table.append('tr');
+            new_row.append('td').text(stat[0]);
+            new_row.append('td').text(stat[1])
+    })
 
 
-function buildMetadata(sample) {
 
-var url = `metadata/${sample}`;
-
-console.log(url);
-
-
-d3.json(url).then(function(response) {
-
-  var data = response;
-
-  console.log(data);
-
-  var panel = d3.select('#sample-metadata');
-
-  console.log(panel);
-
-  panel.html("");
-
-  Object.entries(data).forEach(function(d){
-  panel.append('div').text(`${d[0]}: ${d[1]}`);
   })
 
+}
 
+
+// Code snippet to update zipcode
+function createRadar(zipcode){
+
+d3.json(`/zipcodes/${zipcode}`).then(function(response) {
+
+  // Likely unnecessarily long piece of code to create & remove divs to update chart
+  var radar_area = d3.select('#radar_plot');
+
+  var dummy=[];
+
+  radar_area.selectAll('div')
+  .data(dummy)
+  .exit()
+  .remove();
+
+  dummy = [1];
+
+  radar_area.selectAll('div')
+  .data(dummy)
+  .enter()
+  .append('div')
+  .attr("id", 'chart_area')
+  .attr("width","500px")
+  .attr("height",'500px')
+
+  zip_info = response;
+
+  console.log('Zip Stats:')
+  console.log(response);
+
+  d3.json('/averages').then(function(reply){
+
+  state_avg=reply;
+
+  console.log('State Avg:')
+  console.log(reply);
+
+
+    anychart.onDocumentReady(function () {
+      // create data set on our data
+
+      chartData = {
+        title: '',
+        header: ['#', `${zipcode} / CA Avg`],
+        rows: [
+            ['Income',  zip_info.income/state_avg.income],
+            ['Education',  zip_info.education/state_avg.education],
+            ['Crime', zip_info.crime/state_avg.crime],
+            ['Avg Jan Temperature (F)',  zip_info.jan_avg_temp/state_avg.jan_avg_temp],
+            ['Cost of Living', zip_info.cost_of_living/state_avg.cost_of_living]
+        ]
+    };
+
+      console.log(chartData);
+    
+      // create radar chart
+      var chart = anychart.radar();
+    
+      // set default series type
+      chart.defaultSeriesType('area');
+    
+      // set chart data
+      chart.data(chartData);
+
+      console.log(chart);
+    
+      // force chart to stack values by Y scale.
+      chart.yScale().stackMode('value');
+    
+      // set yAxis settings
+      chart.yAxis().stroke('#545f69');
+      chart.yAxis().ticks().stroke('#545f69');
+    
+      // set yAxis labels settings
+      chart.yAxis().labels()
+              .fontColor('#545f69')
+              .format('{%Value}{scale:(1000000)|(M)}');
+    
+      // set chart legend settings
+      chart.legend()
+              .align('center')
+              .position('center-bottom')
+              .enabled(true);
+    
+      chart.container('');
+      // set container id for the chart
+      chart.container('chart_area');
+      // initiate chart drawing
+      chart.draw(); 
+    })
+  })
 });
-  
+};
 
-    // BONUS: Build the Gauge Chart
-    // buildGauge(data.WFREQ);
+function optionChanged(variable){
 
-}
+  if(variable=='Cost of Living'){
+    variable = 'cost'
+  };
 
-function buildCharts(sample) {
+  var url=`/${variable.toLowerCase()}`;
 
+  d3.json(url).then(function(response){
 
-        
-  d3.json(`samples/${sample}`).then(function(response){
-    var ids=response.otu_ids;
-    var labels=response.otu_labels;
-    var sample_values=response.sample_values;
+    var zips=response;
 
-    console.log("data pulled");
+    var zip_list = []
 
-    var trace1 = {
-      x: ids,
-      y: sample_values,
-      text: labels,
-      mode: 'markers',
-      marker : {
-        color: ids,
-        size : sample_values
-      }
-    };
+    zips.forEach(function(zip){
+      zip_list.push(zip.toString())
+    })
 
-    var data =[trace1];
-    var layout = {
-      showlegend: false,
+    console.log(zip_list);
 
-    };
+    // var list_div=d3.select("#zip_list");
 
-    Plotly.newPlot('bubble', data, layout);
+    // console.log(list_div);
 
+    // var zip_list = list_div.append('ul');
 
-    // Sort
-    // labels_slice.sort(function(a) {
-    //   return -a;
-    // })
+    // console.log(zip_list);
 
-    // Slice 
-    var ids_slice = ids.slice(0,10);
-    var labels_slice = labels.slice(0,10);
-    var values_slice = sample_values.slice(0,10);
-    console.log("slices complete");
+    // zip_list.selectAll("li")
+    // .data(zips)
+    // .enter()
+    // .append("li")
+    // .html(String)
 
-    var data = [{
-      values: values_slice,
-      labels: ids_slice,
-      hovertext: labels_slice,
-      type: 'pie'
-    }];
-    
-    var layout = {
-      // height : 600,
-      // width : 600,
-    };
-    
-    Plotly.newPlot('pie', data, layout);
+    // var ul = d3.select('#zip_list').append('ul');
 
-  });
+    data_reset=[]
 
-  // Guage chart 
+    d3.select("ol")
+    .selectAll("li")
+    .data(data_reset)
+    .exit()
+    .remove();
 
-  d3.json(`wfreq/${sample}`).then(function(response){
-    var wfreq=response.WFREQ;
-    var gauge = createGauge(wfreq)
-  
-    var data=gauge[0];
-  
-    var layout=gauge[1];
-  
-    Plotly.newPlot('gauge', data, layout);
-  
+    d3.select("ol")
+    .selectAll("li")
+    .data(zip_list)
+    .enter()
+    .append("li")
+    .text(function(d) {
+      return d;
+    })
+    .on("click",function(d){
+      // Put update function in here
+      zipcode = parseInt(d,10);
+      console.log(zipcode);
+      createRadar(zipcode);
+      createTable(zipcode);
     });
 
-    document.getElementById("gauge").style.zIndex = "1";
+    })
+  }
+
+  function init(){
+
+  var url='/income';
+
+  d3.json(url).then(function(response){
+    var zips=response;
+
+    var zip_list = []
+
+    zips.forEach(function(zip){
+      zip_list.push(zip.toString())
+    })
 
 
-}
+    d3.select("ol")
+    .selectAll("li")
+    .data(zip_list)
+    .enter()
+    .append("li")
+    .text(function(d) {
+      return d;
+    })
+    .on("click",function(d){
+      // Put update function in here
+      zipcode = parseInt(d,10);
+      console.log(zipcode);
+      createTable(zipcode);
+      createRadar(zipcode);
 
-function init() {
-  // Grab a reference to the dropdown select element
-  var selector = d3.select("#selDataset");
 
-  // Use the list of sample names to populate the select options
-  d3.json("/names").then((sampleNames) => {
-    sampleNames.forEach((sample) => {
-      selector
-        .append("option")
-        .text(sample)
-        .property("value", sample);
-    });
+    })
+    
+    ;
+    })
 
-    // Use the first sample from the list to build the initial plots
-    const firstSample = sampleNames[0];
-    buildCharts(firstSample);
-    buildMetadata(firstSample);
-  });
+  }
 
-}
 
-function optionChanged(newSample) {
-  // Fetch new data each time a new sample is selected
-  buildCharts(newSample);
-  buildMetadata(newSample);
-}
 
-// Initialize the dashboard
-init();
 
+
+  init();
+
+
+
+// Radar Plot Source: 
+// https://www.anychart.com/products/anychart/gallery/Radar_Charts_(Spiderweb)/Stacked_Area_Radar_Chart.php
+// anychart.onDocumentReady(function () {
+//   // create data set on our data
+//   chartData = {
+//       title: '',
+//       header: ['#', 'Arizona', 'Florida', 'Nevada'],
+//       rows: [
+//           ['Income', 1368763, 1991297, 431097],
+//           ['Education', 799873, 1254823, 561983],
+//           ['Crime', 1497653, 1732987, 1019874],
+//           ['Climate', 1351874, 332871, 2027634],
+//           ['Cost of Living', 1582987, 649853, 1961085]
+//       ]
+//   };
+
+//   // create radar chart
+//   var chart = anychart.radar();
+
+//   // set default series type
+//   chart.defaultSeriesType('area');
+
+//   // set chart data
+//   chart.data(chartData);
+
+//   // force chart to stack values by Y scale.
+//   chart.yScale().stackMode('value');
+
+//   // set yAxis settings
+//   chart.yAxis().stroke('#545f69');
+//   chart.yAxis().ticks().stroke('#545f69');
+
+//   // set yAxis labels settings
+//   chart.yAxis().labels()
+//           .fontColor('#545f69')
+//           .format('{%Value}{scale:(1000000)|(M)}');
+
+//   // set chart legend settings
+//   chart.legend()
+//           .align('center')
+//           .position('center-bottom')
+//           .enabled(true);
+
+
+//   // set container id for the chart
+//   chart.container('radar_plot');
+//   // initiate chart drawing
+//   chart.draw();
+
+// })

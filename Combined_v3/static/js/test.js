@@ -28,88 +28,6 @@ var grayscalemap = L.tileLayer(
         accessToken: API_KEY
     }).addTo(myMap);
 
-// """If we wanted to add more layers"""
-// var baseMaps = {
-//     Grayscale: grayscalemap
-// };
-
-// L.control
-//     .layers(baseMaps {
-//         collapsed: false
-//     })
-//     .addTo(myMap);
-
-var geoAPI =
-    "https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/ca_california_zip_codes_geo.min.json";
-
-d3.json(geoAPI, function (geoData) {
-    // d3.json(`/zipcodes`, function (zipData) {
-    d3.json("data.json", function (zipData) {
-
-        geoData.features.map(res => Object.assign(res, {
-            properties: {
-                ...res.properties,
-                ...zipData[res.properties.ZCTA5CE10]
-            }
-        }))
-
-        // var dropDown = d3.select("#dropdown");
-
-        // dropDown.on("change", function () {
-
-        //     selected_dataset = d3.event.target.value;
-
-            L.choropleth(geoData, {
-                valueProperty: selected_dataset,
-                scale: updateScale(selected_dataset),
-                steps: 10,
-                mode: "q",
-                style: {
-                    color: "#fff",
-                    weight: 1,
-                    fillOpacity: 0.5
-                },
-                // """Adding interaction functions"""
-                onEachFeature: function (feature, layer) {
-                    layer.on({
-                        mouseover: function (event) {
-                            layer = event.target;
-                            layer.setStyle({
-                                fillOpacity: 0.9
-                            });
-                        },
-                        mouseout: function (event) {
-                            layer = event.target;
-                            layer.setStyle({
-                                fillOpacity: 0.5
-                            });
-                        },
-                        click: function (event) {
-                            myMap.fitBounds(event.target.getBounds());
-                        }
-                    });
-                    layer.bindPopup("<h2>Zip Code: " + feature.properties.ZCTA5CE10 +
-                        "</h2> <hr> <p>Average Income: $" + feature.properties.income +
-                        "<br>Crime Rate: " + feature.properties.crime +
-                        "<br>Education Level: " + feature.properties.education +
-                        "<br>Average Temperature: " + feature.properties.winter_temp +
-                        "<br>Cost of Living: " + feature.properties.cost_of_living +
-                        "</p>");
-                }
-            }).addTo(myMap);
-        // })
-            // dropdown dataset selection
-            var dropDown = d3.select("#dropdown");
-
-            dropDown.on("change", function () {
-
-                selected_dataset = d3.event.target.value;
-
-                updateMap(geoData, selected_dataset);
-            });
-    })
-})
-
 function updateMap(dataset, newProperty) {
     L.choropleth(dataset, {
         valueProperty: newProperty,
@@ -166,3 +84,71 @@ function updateScale(newProperty) {
         return ["#096900", "#FDFFFD"]
     }
 }
+
+
+var geoAPI =
+    "https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/ca_california_zip_codes_geo.min.json";
+
+d3.json(`/zipcodes`, function (zipData) {
+// d3.json("data.json", function (zipData) {
+    console.log(zipData)
+    d3.json(geoAPI, function (geoData) {
+
+        geoData.features.map(res => Object.assign(res, {
+            properties: {
+                ...res.properties,
+                ...zipData[res.properties.ZCTA5CE10]
+            }
+        }))
+
+        L.choropleth(geoData, {
+            valueProperty: selected_dataset,
+            scale: updateScale(selected_dataset),
+            steps: 10,
+            mode: "q",
+            style: {
+                color: "#fff",
+                weight: 1,
+                fillOpacity: 0.5
+            },
+            // """Adding interaction functions"""
+            onEachFeature: function (feature, layer) {
+                layer.on({
+                    mouseover: function (event) {
+                        layer = event.target;
+                        layer.setStyle({
+                            fillOpacity: 0.9
+                        });
+                    },
+                    mouseout: function (event) {
+                        layer = event.target;
+                        layer.setStyle({
+                            fillOpacity: 0.5
+                        });
+                    },
+                    click: function (event) {
+                        myMap.fitBounds(event.target.getBounds());
+                    }
+                });
+                layer.bindPopup("<h2>Zip Code: " + feature.properties.ZCTA5CE10 +
+                    "</h2> <hr> <p>Average Income: $" + feature.properties.income +
+                    "<br>Crime Rate: " + feature.properties.crime +
+                    "<br>Education Level: " + feature.properties.education +
+                    "<br>Average Temperature: " + feature.properties.winter_temp +
+                    "<br>Cost of Living: " + feature.properties.cost_of_living +
+                    "</p>");
+            }
+        }).addTo(myMap);
+        // })
+        // dropdown dataset selection
+        var dropDown = d3.select("#dropdown");
+
+        dropDown.on("change", function () {
+
+            selected_dataset = d3.event.target.value;
+
+            updateMap(geoData, selected_dataset);
+        });
+    })
+})
+

@@ -3,6 +3,8 @@ import os
 import pandas as pd
 import numpy as np
 
+import json
+
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
@@ -35,6 +37,16 @@ def index():
     """Return the homepage."""
     return render_template("index.html")
 
+@app.route("/geojson")
+def geojson():
+    """Return the homepage."""
+    # geojson = pd.read_json()
+    # json_string = json.dumps('ca_california_zip_codes_geo.min.json')
+    with open('ca_california_zip_codes_geo.min.json', 'r') as f:
+            datastore = json.load(f)
+    # datastore = json.load('ca_california_zip_codes_geo.min.json')
+    # datastore = json.loads(json_string)
+    return(jsonify(datastore))
 
 @app.route("/income")
 def income():

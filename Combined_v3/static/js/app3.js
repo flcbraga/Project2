@@ -463,14 +463,18 @@ function init() {
   })
 
   // Choropleth creation
-  var geoAPI =
-    "https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/ca_california_zip_codes_geo.min.json";
+  
+  // var geoAPI =
+  //   "https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/ca_california_zip_codes_geo.min.json";
+  
+  var geoAPI = '/geojson'
 
   console.log(geoAPI)
   d3.json(`/zipcodes`).then(function (zipData) {
     // d3.json("data.json", function (zipData) {
     console.log(zipData)
-    d3.json(geoAPI, function (geoData) {
+    // d3.json(geoAPI, function (geoData) {
+    d3.json(geoAPI).then(function (geoData) {
 
       geoData.features.map(res => Object.assign(res, {
         properties: {

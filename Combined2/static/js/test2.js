@@ -35,11 +35,12 @@ var fill_viridis = d3.scale.linear()
 var norm_fill = d3.scale.linear()
     .range([0, 1]);
 
-var geoAPI =
-    "https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/ca_california_zip_codes_geo.min.json";
-
+// var geoAPI =
+//     "https://raw.githubusercontent.com/OpenDataDE/State-zip-code-GeoJSON/master/ca_california_zip_codes_geo.min.json";
+var geoAPI = '/geojson'
 d3.json(geoAPI, function (geoData) {
-    d3.json("data.json", function (zipData) {
+    // d3.json("data.json", function (zipData) {
+    d3.json("/zipcodes", function (zipData) {
 
         geoData.features.map(res => Object.assign(res, {
             properties: {

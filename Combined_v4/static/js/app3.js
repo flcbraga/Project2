@@ -269,6 +269,56 @@ function optionChanged(variable) {
     variable = 'cost'
   };
 
+   /* start */
+   var dropdown_options;
+
+   switch (variable) {
+     case 'Income':
+       dropdown_options = 'income'
+       break;
+     case 'Crime':
+       dropdown_options = 'crime'
+       break;
+     case 'Education':
+       dropdown_options = 'education'
+       break;
+     case 'Climate':
+       dropdown_options = 'winter_temp';
+       break;
+     case 'Cost of Living':
+       dropdown_options = 'cost_of_living';
+     default:
+   }
+ 
+   var geoAPI = '/geojson';
+ 
+   // d3.json(geoAPI).then(function (geoData) {
+   // updateMap(geoData, dropdown_options);
+   // console.log('map updated');
+   // });
+ 
+   d3.json(`/zipcodes`).then(function (zipData) {
+     // d3.json("data.json", function (zipData) {
+     console.log(zipData);
+     // d3.json(geoAPI, function (geoData) {
+     d3.json(geoAPI).then(function (geoData) {
+ 
+       geoData.features.map(res => Object.assign(res, {
+         properties: {
+           ...res.properties,
+           ...zipData[res.properties.ZCTA5CE10]
+         }
+       }))
+ 
+     updateMap(geoData, dropdown_options);
+     console.log('map updated');
+ 
+     })
+ 
+   })
+ 
+   /* end */
+
   var url = `/${variable.toLowerCase()}`;
 
   d3.json(url).then(function (response) {
@@ -347,9 +397,11 @@ function optionChanged(variable) {
 }
 
 function updateMap(dataset, newProperty) {
+
   L.choropleth(dataset, {
     valueProperty: newProperty,
-    scale: ["#008073", "#FFFDCC"],
+    // scale: ["#008073", "#FFFDCC"],
+    scale:updateScale(newProperty),
     steps: 10,
     mode: "q",
     style: {
@@ -472,7 +524,7 @@ function init() {
   console.log(geoAPI)
   d3.json(`/zipcodes`).then(function (zipData) {
     // d3.json("data.json", function (zipData) {
-    console.log(zipData)
+    // console.log(zipData)
     // d3.json(geoAPI, function (geoData) {
     d3.json(geoAPI).then(function (geoData) {
 

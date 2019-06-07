@@ -1,8 +1,8 @@
 body, html {
   height: 100%;
   background-color: #e0cdb9;
-  padding-left: 75px;
-  padding-right: 75px;
+  padding-left: 25px;
+  padding-right: 25px;
   /* margin-left: 25px;
   margin-right: 25px; */
   font-family: 'Raleway', sans-serif;
@@ -71,11 +71,18 @@ body, html {
           backface-visibility: visible;
 }
 
-.chart,
+/* .chart,
 .col-md-6 {
   padding-left: 50px;
   padding-right: 50px;
-  /* width: 50%; */
+} */
+
+#left {
+  padding-left: 50px;
+}
+
+#right {
+  padding-right: 50px;
 }
 
 #block {
